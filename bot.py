@@ -26,7 +26,7 @@ from random import choice, randint
 from asyncio import sleep
 sys.path.insert(1, '../')
 
-
+# hi
 
 #with open("prefixes.json", "r") as f:
   #load = json.load(f)
