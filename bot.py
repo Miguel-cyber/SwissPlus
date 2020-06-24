@@ -25,8 +25,11 @@ import pypokedex
 from random import choice, randint
 from asyncio import sleep
 sys.path.insert(1, '../')
-
-# hi
+from mathparse import mathparse
+import functools
+import itertools
+import youtube_dl
+from async_timeout import timeout
 
 #with open("prefixes.json", "r") as f:
   #load = json.load(f)
@@ -51,7 +54,7 @@ client = commands.Bot(command_prefix=default_prefix)
 
 @client.event #on_ready event
 async def on_ready():
- await client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing,name="v1.2.0 | swissfun.mysticguard.xyz"))
+ await client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing,name="v1.3.0 | swissplus.mysticguard.xyz"))
  channel = client.get_channel(723120227533062205)
  embed = discord.Embed(colour=discord.Colour.green())
  embed.set_image(url="https://cdn.discordapp.com/attachments/716042337330921642/723121061784453130/542171280183656458.png")
@@ -60,6 +63,17 @@ async def on_ready():
 
 reddit = praw.Reddit(client_id='GKg9xGGzV4vM9Q', client_secret='FutzuRgQ-0-fFTlOsbbDeJPdcUg', user_agent='Eternal City Bot by u/RedPhantomIRP')
 client.remove_command("help")
+
+
+for cog in os.listdir('cogs'):
+    if cog.endswith('.py'):
+        try:
+            cog = f"cogs.{cog.replace('.py', '')}"
+            client.load_extension(cog)
+
+        except Exception as e:
+            print(f'{cog} loading failed.')
+            raise e
 
 @client.event
 async def on_guild_join(guild):
@@ -73,18 +87,28 @@ async def on_guild_join(guild):
 
 
 
-
 @client.command()
 async def help(ctx):
     embed = discord.Embed(title="SwissPlus Help", colour=discord.Colour.blue())
     embed.add_field(name="<a:betterinfo:723691069035905146> Information", value="`botinfo`,`build`,`ping`,`userinfo`", inline=False)
     embed.add_field(name="<a:gears:723662459499708437> Moderation", value="`warn`,`warns`,`clearwarns`,`kick`,`ban`,`purge`,`config`,`recentlog`", inline=False)
     embed.add_field(name="<a:securitybig:723683774776344637> Security", value="`pincode`", inline=False)
-    embed.add_field(name="<a:fun:723681896722333726> Fun", value="`fact`,`8ball`,`topic`,`suggest`,`translate`,`slap`,`swiss`,`say`,`age`,`weather`,`hack`,`ship`,`timer`,`youtube`", inline=False)
+    embed.add_field(name="<a:fun:723681896722333726> Fun", value="`fact`,`8ball`,`topic`,`suggest`,`translate`,`slap`,`swiss`,`say`,`age`,`weather`,`hack`,`ship`,`timer`", inline=False)
     embed.add_field(name=":moneybag: Currency", value="`register`,`work`,`balance`", inline=False)
+    embed.add_field(name=":notes: Music", value="`join`,`leave`,`play`,`stop`,`leave`,`queue`,`skip`,`remove`,`volume`,`shuffle`,`loop`\n:warning: `Please note lag will be expected. Please do not mass spam them.`\n`The volume command can reach limits which are earrape.exe activated. Doing this with other members can lead to a ban from the bot for max time length of 1 week.`", inline=False)
     embed.add_field(name=":page_facing_up: Text", value="`drunkify`,`encrypt`,`decrypt`", inline=False)
     embed.add_field(name="<a:RedditSpin:723666835710541898> Reddit", value="`flightsim`,`fsx`,`meme`,`news`,`swissbot`", inline=False)
     await ctx.send(embed=embed)
+    
+    
+@client.command(name = "math", aliases = ["solve", "calc"])
+async def math(ctx, *, equation):
+	answer = discord.Embed(
+		title = f"{equation}",
+		description = f"{mathparse.parse(equation)}"
+	)
+	await ctx.send(embed = answer)
+    
     
 @client.command(aliases = ["yt"])
 async def youtube(ctx, *, search = None):
@@ -106,7 +130,11 @@ async def youtube(ctx, *, search = None):
       await video.search("never gonna give you up")
 
     else:
-
+      
+      m1=await ctx.send(f":eyes: Searching in youtube for `{search}`...")
+      
+      await ctx.trigger_typing()
+      
       await video.search(search)
   
     embed = discord.Embed(description = "[{}]({})".format(video.title, video.url))
@@ -127,7 +155,8 @@ async def youtube(ctx, *, search = None):
     
     embed.set_footer(text = "Safesearch: ON | Turn on NSFW to turn off safesearch.")
   
-    await ctx.send(embed = embed)
+    await m1.edit(embed = embed)
+    
     
   else:
     
@@ -157,12 +186,18 @@ async def youtube(ctx, *, search = None):
   
     await ctx.send(embed = embed)
     
+@client.command()
+async def bork(ctx, user: discord.Member = None):
+    if user is None:
+        await ctx.send(":x: börk börk. börk börk börk!! börk: `+bork @börk` börk")
+    else:
+        await ctx.send(f"`{ctx.author}` börked `{user}`! börk börk börk. börk börk :(", file=discord.File("bork.png"))
 
 @client.command(aliases=["w"])
-async def weather(ctx, *, varos):
+async def weather(ctx, varos):
     if not ctx.message.author.bot:
         try:
-            api_key = "7a94d7ac1501b84ccd5796dc95c3974d"
+            api_key = "ae64e34a4d20f98830c9a409d2a1a814"
             base_url = "http://api.openweathermap.org/data/2.5/weather?"
             city_name = varos
             complete_url = base_url + "appid=" + api_key + "&q=" + city_name
@@ -186,9 +221,10 @@ async def weather(ctx, *, varos):
                 embed.set_author(name="SwissPlus", icon_url=ctx.message.author.avatar_url)
                 await ctx.send(embed=embed)
             else:
-                await ctx.send(":x: Cannot find this city!")
+                await ctx.send(":x: Cannot find this **city**!")
         except Exception as e:
-            await ctx.send(":x: Couldn't retrieve data!")
+            await ctx.send(str(e))
+            #await ctx.send(f":x: Couldn't retrieve data for {varos}!")
             
 @client.event
 async def on_member_join(member):
@@ -199,46 +235,48 @@ async def on_member_join(member):
 
         return
     channel = client.get_channel(723540800171933717)
-    embed = discord.Embed(title="***Welcome to {ctx.guild.name}***", description="Welcome {} to {}! you are the {} member!  Please read The <#593154693459476480>. Enjoy your stay!".format(member.mention, ctx.guild.name, str(member.guild.member_count)), colour=discord.Colour.green())
+    embed = discord.Embed(title="***Welcome!***", description="Welcome {} to {}! you are the {} member!  Please read The <#593154693459476480>. Enjoy your stay!".format(member.mention, guild.name, str(member.guild.member_count)), colour=discord.Colour.green())
     embed.set_footer(text=member.name, icon_url=member.avatar_url)
     await channel.send(embed=embed)
 
-'''
+kson_token = "a43660a9f4c73f5f2d8aea7b3a8697d3b6652b41"
+
 @client.command()
 async def locate(ctx, *, place = None):
 
-if place == None:
+    if place == None:
 
-  embed = discord.Embed()
+      embed = discord.Embed()
 
-  embed.title = ":x: Invalid argument"
+      embed.title = ":x: Invalid argument"
 
-  embed.description = "**+locate <place>**"
+      embed.description = "**+locate <place>**"
 
-  embed.color = discord.Color.red()
+      embed.color = discord.Color.red()
 
-  return await ctx.send(embed = embed)
+      return await ctx.send(embed = embed)
 
-async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession() as session:
 
-  async with session.get("https://api.ksoft.si/kumo/gis", params = {"q": place, "include_map": "true"}, headers = {"Authorization": f"Bearer {ksoft_token}"}) as resp:
+      async with session.get("https://api.ksoft.si/kumo/gis", params = {"q": place, "include_map": "true"}, headers = {"Authorization": f"Bearer {kson_token}"}) as resp:
 
-    data = await resp.json()
+        ndata = await resp.json()
 
-embed = discord.Embed()
+    embed = discord.Embed()
 
-embed.title = data["data"]["address"]
+    embed.title = data["data"]["address"]
 
-embed.url = data["data"]["map"]
+    embed.url = data["data"]["map"]
 
-embed.set_image(url = data["data"]["map"])
+    embed.set_image(url = data["data"]["map"])
 
-embed.add_field(name = "Latitude", value = data["data"]["lat"])
+    embed.add_field(name = "Latitude", value = data["data"]["lat"])
 
-embed.add_field(name = "Longitude", value = data["data"]["lon"])
+    embed.add_field(name = "Longitude", value = data["data"]["lon"])
 
-await ctx.send(embed = embed)
-'''
+    await ctx.send(embed = embed)
+    
+
             
 @client.command()
 async def butter(ctx):
@@ -282,6 +320,9 @@ async def getsomehelp (ctx,user: discord.Member):
         draw.text((50, 1), "  {} wanted {} to get help".format(ctx.author.name, user.name), (255, 255, 255), font=font)
         img.save('getsomehelp1.png')
         await ctx.send(file=discord.File("getsomehelp1.png"))
+        
+        
+
         
 @client.command()
 async def hack(ctx, user: discord.Member = None):
@@ -812,7 +853,7 @@ async def suggest(ctx, *, reportmsg):
 @client.command()
 async def build(ctx):
     embed = discord.Embed(Title="SwissPlus Build", colour=discord.Colour.blue())
-    embed.add_field(name="Build Version:", value="v1.2.0", inline=False)
+    embed.add_field(name="Build Version:", value="v1.3.0", inline=False)
     embed.add_field(name="Released:", value="17th June 2020", inline=False)
     embed.add_field(name="Github:", value="[Click Me](http://swissplus.mysticguard.xyz)", inline=False)
     embed.add_field(name="Known Issues", value="Issues with loading some images via Reddit\n\nIssues __should__ be fixed, please dm a SwissPlus developer if errors occure.", inline=False)
