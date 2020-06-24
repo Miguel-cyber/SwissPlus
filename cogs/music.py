@@ -14,7 +14,7 @@ class Music(commands.Cog):
       self.bot = bot
     
     @commands.command()
-    async def weather1(self, ctx, varos):
+    async def weather1(self, ctx: commands.Context, varos):
         if not ctx.message.author.bot:
             try:
                 api_key = "ae64e34a4d20f98830c9a409d2a1a814"
