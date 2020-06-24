@@ -12,6 +12,39 @@ from discord.ext import commands
 class Music(commands.Cog):
     def __init__(self, bot):
       self.bot = bot
+    
+    @commands.command()
+    async def weather1(self, ctx, varos):
+        if not ctx.message.author.bot:
+            try:
+                api_key = "ae64e34a4d20f98830c9a409d2a1a814"
+                base_url = "http://api.openweathermap.org/data/2.5/weather?"
+                city_name = varos
+                complete_url = base_url + "appid=" + api_key + "&q=" + city_name
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(complete_url) as r:
+                        response = await r.json()
+                x = response
+                if x["cod"] != "404":
+                    import pytemperature
+                    y = x["main"]
+                    z = x["weather"]
+                    current_temperature = y["temp"]
+                    current_pressure = y["pressure"]
+                    current_humidity = y["humidity"]
+                    weather_description = z[0]["description"]
+                    celsius = pytemperature.k2c(current_temperature)
+                    embed = discord.Embed(title="Weather informations", color=0x00ff00, timestamp=datetime.datetime.utcnow())
+                    embed.add_field(name="**Temperature**", value=f"{int(celsius)}°C")
+                    embed.add_field(name="**Pressure**", value=f"{current_pressure}hPa")
+                    embed.add_field(name="**Humidity**", value=f"{current_humidity}%")
+                    embed.set_author(name="SwissPlus", icon_url=ctx.message.author.avatar_url)
+                    await ctx.send(embed=embed)
+                else:
+                    await ctx.send(":x: Cannot find this **city**!")
+            except Exception as e:
+                #await ctx.send(str(e))
+                await ctx.send(f":x: Couldn't retrieve data for {varos}!")
 
 # Silence useless bug reports messages
 youtube_dl.utils.bug_reports_message = lambda: ''
