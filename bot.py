@@ -587,7 +587,7 @@ async def GuildCount(ctx):
   await ctx.send("**SwissFun** is connected on " + str(len(client.guilds)) + " server(s):")
   await ctx.send('\n'.join(server.name for server in servers))
 
-@client.command()
+'''@client.command()
 @commands.has_permissions(administrator=True)
 async def say(ctx, channel : discord.TextChannel, *, arg = None):
   
@@ -614,7 +614,7 @@ async def purge(ctx,amount:int=None):
             await ctx.channel.purge(limit = amount + 1)
             embed = discord.Embed(color=discord.Colour.green(), description=f":white_check_mark: Purged {amount} message(s).")
             await ctx.send(embed=embed, delete_after=3)
-            
+        
 @purge.error
 async def error_handler(ctx, error):
     if isinstance(error, BotMissingPermissions):
@@ -627,7 +627,7 @@ async def error_handler(ctx, error):
     else:
         raise error
   
-
+'''
 
 
 @client.command()
@@ -1124,7 +1124,7 @@ async def error_handler(ctx, error):
     else:
         raise error
   
-#ban
+'''#ban
 @client.command()
 @bot_has_permissions(ban_members=True)
 @commands.has_permissions(ban_members=True)
@@ -1178,7 +1178,7 @@ async def gayrate(ctx, member: discord.Member = None):
     else:
         Percent = str(random.randint(0,100))
         await ctx.send(f"{member.mention} is {Percent}% gay!")
-
+'''
 @client.command()
 async def simprate(ctx, member: discord.Member = None):
     file = open("system.json", "r")
@@ -1209,7 +1209,7 @@ async def age(ctx, member: discord.Member = None):
         Percent = str(random.randint(13,100))
         await ctx.send(f"{member.mention} is {Percent} years old!")
         
-@client.command()
+'''@client.command()
 @commands.has_permissions(manage_messages = True)
 async def clearwarns(ctx, user: discord.Member = None):
     file = open("system.json", "r")
@@ -1404,7 +1404,7 @@ async def warn_error(ctx, error):
         embed = discord.Embed(description = ":warning: Error", color = discord.Colour.red())
         embed.add_field(name="An error has occured!", value=f"{error}")
         await ctx.send(embed=embed)
-        
+'''  
 @commands.cooldown(1, 5, commands.BucketType.user)
 @client.command()
 async def translate(ctx, type = None, *, arg = None):
