@@ -474,13 +474,6 @@ async def weather(ctx, *, varos):
             await ctx.send(str(e))
             await ctx.send(f":x: Couldn't retrieve data for {varos}!")
             
-@client.event
-async def on_member_join(member):
-    channel = client.get_channel(592463507124125706)
-    embed = discord.Embed(title="***Welcome!***", description="Welcome {} to the Swiss001 Server! You are the {} member!  Please read the <#593154693459476480>. Enjoy your stay!".format(member.mention, str(member.guild.member_count)), colour=discord.Colour.green())
-    embed.set_footer(text=member.name, icon_url=member.avatar_url)
-    await channel.send(embed=embed)
-    await member.send("Welcome to the Swiss001 Server. As our main bot is currently offline, please DM an Admin to get you verified in the server to access channels. Thank you. If you have any futher questions respond to this message and the Bot Developer will respond to you as soon as possible. Thank you for your paitence.")
 
 
 
