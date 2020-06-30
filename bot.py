@@ -14,6 +14,7 @@ import os
 import datetime
 import praw
 import danksearch
+import aiohttp
 from googletrans import Translator
 from PIL import Image
 from PIL import ImageFont
@@ -31,26 +32,37 @@ import itertools
 import youtube_dl
 from async_timeout import timeout
 
-#with open("prefixes.json", "r") as f:
-  #load = json.load(f)
+with open("prefixes.json", "r") as f:
+  load = json.load(f)
   
-default_prefix = "+"
+ban_list=[]
+def get_prefix(bot, msg):
 
-#banlist = []
+    if msg.author.id in ban_list and msg.content.startswith('+'):
+        return msg.channel.send(":no_entry: You have been blacklisted from `SwissPlus`.")
 
-#def get_prefix(bot, message):
-  #with open("prefixes.json", "r") as f:
-    #prefixes = json.load(f)
-    
-    #prefix = prefixes[str(message.guild.id)], load.get(message.guild.id, default_prefix)
-    #if message.author.id in banlist and message.content.startswith(prefix):
-      #return message.channel.send("You have been banned from using `SwissPlus`. Please contact the bot owner for more information.")
-    #else:
-      #return prefixes[str(message.guild.id)], load.get(message.guild.id, default_prefix)
+    prefixes = ['+']
+
+    return commands.when_mentioned_or(*prefixes)(bot, msg)
   
 client = discord.Client
-client = commands.Bot(command_prefix=default_prefix)
+client = commands.Bot(command_prefix=get_prefix)
 
+
+
+@client.command()
+@commands.is_owner()
+async def status(ctx, statuss):
+    await client.change_presence(activity = discord.Activity(name = statuss, type = discord.ActivityType.playing))
+
+
+@client.command()
+@commands.has_permissions(administrator=True)
+async def blacklist(ctx,*users:discord.Member):
+   	for i in users:
+      	    if i.id not in ban_list:
+                ban_list.append(i.id)
+                await ctx.send(f"Successfully blacklisted {users} from using SwissPlus.")
 
 @client.event #on_ready event
 async def on_ready():
@@ -85,20 +97,250 @@ async def on_guild_join(guild):
     with open("prefixes.json", "w") as f:
       json.dump(prefixes, f)
 
-
+kson_token = "a43660a9f4c73f5f2d8aea7b3a8697d3b6652b41"
 
 @client.command()
 async def help(ctx):
     embed = discord.Embed(title="SwissPlus Help", colour=discord.Colour.blue())
-    embed.add_field(name="<a:betterinfo:723691069035905146> Information", value="`botinfo`,`build`,`ping`,`userinfo`", inline=False)
-    embed.add_field(name="<a:gears:723662459499708437> Moderation", value="`warn`,`warns`,`clearwarns`,`kick`,`ban`,`purge`,`config`,`recentlog`", inline=False)
+    embed.add_field(name="<a:betterinfo:723691069035905146> Information", value="`botinfo`,`build`,`ping`,`userinfo`,`level-roles`", inline=False)
+    embed.add_field(name="<a:gears:723662459499708437> Moderation", value="`config`", inline=False)
     embed.add_field(name="<a:securitybig:723683774776344637> Security", value="`pincode`", inline=False)
-    embed.add_field(name="<a:fun:723681896722333726> Fun", value="`fact`,`8ball`,`topic`,`suggest`,`translate`,`slap`,`swiss`,`say`,`age`,`weather`,`hack`,`ship`,`timer`", inline=False)
+    embed.add_field(name="<a:fun:723681896722333726> Fun", value="`fact`,`8ball`,`topic`,`suggest`,`translate`,`slap`,`swiss`,`age`,`weather`,`hack`,`ship`,`timer`,`locate`,`bork`,`croissant`,`cat`,`dog`,`metar`,`emojify`,`fight`,`putin`", inline=False)
     embed.add_field(name=":moneybag: Currency", value="`register`,`work`,`balance`", inline=False)
-    embed.add_field(name=":notes: Music", value="`join`,`leave`,`play`,`stop`,`leave`,`queue`,`skip`,`remove`,`volume`,`shuffle`,`loop`\n:warning: `Please note lag will be expected. Please do not mass spam them.`\n`The volume command can reach limits which are earrape.exe activated. Doing this with other members can lead to a ban from the bot for max time length of 1 week.`", inline=False)
-    embed.add_field(name=":page_facing_up: Text", value="`drunkify`,`encrypt`,`decrypt`", inline=False)
+    embed.add_field(name=":notes: Music", value="`join`,`leave`,`play`,`stop`,`leave`,`queue`,`skip`,`remove`,`volume`,`shuffle`,`loop`", inline=False)
+    embed.add_field(name=":page_facing_up: Text", value="`drunkify`,`encrypt`,`decrypt`,`msg-leaderboard`", inline=False)
     embed.add_field(name="<a:RedditSpin:723666835710541898> Reddit", value="`flightsim`,`fsx`,`meme`,`news`,`swissbot`", inline=False)
     await ctx.send(embed=embed)
+    
+@client.command()
+async def putin(ctx):
+    await ctx.send("https://tenor.com/blmiu.gif thicc")
+    
+@client.command(name="level-roles")
+async def levelroles(ctx):
+    embed = discord.Embed(title="Level Roles", colour=discord.Colour.blue())
+    embed.add_field(name="Here's the level roles", value="<@&592762263551606804> - Level 0\n<@&598131264402358284> - Level 5\n<@&598131527670431764> - Level 10\n<@&598131842243231783> - Level 15\n<@&598132667741110273> - Level 20\n<@&598132087526129683> - Level 30\n<@&598132337771020298> - Level 40\n<@&598131706343718912> - Level 50\n<@&718936713333833799> - Level 60")
+    await ctx.send(embed=embed)
+    
+def insert_returns(body):
+	# insert return stmt if the last expression is a expression statement
+	if isinstance(body[-1], ast.Expr):
+		body[-1] = ast.Return(body[-1].value)
+		ast.fix_missing_locations(body[-1])
+
+	# for if statements, we insert returns into the body and the orelse
+	if isinstance(body[-1], ast.If):
+		insert_returns(body[-1].body)
+		insert_returns(body[-1].orelse)
+
+	# for with blocks, again we insert returns into the body
+	if isinstance(body[-1], ast.With):
+		insert_returns(body[-1].body)
+
+
+@client.command(aliases=['run', 'eval', 'e'])
+@commands.is_owner()
+async def eval_fn(ctx, *, cmd):
+  """
+	Evaluates input.
+    Input is interpreted as newline seperated statements.
+    If the last statement is an expression, that is the return value.
+    Usable globals:
+      - `bot`: the bot instance
+      - `discord`: the discord module
+      - `commands`: the discord.ext.commands module
+      - `ctx`: the invokation context
+      - `__import__`: the builtin `__import__` function
+    Such that `>eval 1 + 1` gives `2` as the result.
+    The following invokation will cause the bot to send the text '9'
+    to the channel of invokation and return '3' as the result of evaluating
+    >eval ```
+    a = 1 + 2
+    b = a * 2
+    await ctx.send(a + b)
+    a
+    ```
+    """
+  fn_name = "_eval_expr"
+
+  cmd = cmd.strip("` ")
+
+	# add a layer of indentation
+  cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
+  
+  # wrap in async def body
+  body = f"async def {fn_name}():\n{cmd}"
+  
+  parsed = ast.parse(body)
+  body = parsed.body[0].body
+
+  insert_returns(body)
+  
+  env = {
+	    'bot': ctx.bot,
+	    'discord': discord,
+      'commands': commands,
+	    'ctx': ctx,
+	    '__import__': __import__
+	}
+	
+  exec(compile(parsed, filename="<ast>", mode="exec"), env)
+	
+  result = (await eval(f"{fn_name}()", env))
+	
+  await ctx.send(f"{result}")
+    
+@client.command()
+async def ticktacktoe(ctx):
+    m1=await ctx.send("Loading... █▒▒▒▒▒▒▒▒▒ 10%")
+    await m1.edit(content="███▒▒▒▒▒▒▒ 20%")
+    await m1.edit(content="█████▒▒▒▒▒ 30%")
+    await m1.edit(content="██████████ 100%")
+    await m1.edit(content="Finished loading.", delete_after=1)
+    await asyncio.sleep(1)
+    await ctx.send("Loading Section Completed.", delete_after=1)
+    await asyncio.sleep(1)
+    await ctx.author.send("Welcome to Tick Tack Toe!\nCurrently this command is in development and not ready. Sorry about that.", delete_after=10)
+    
+    
+@client.command()
+async def metar(ctx, *, icao=None):
+    if ctx.author.bot:
+        return
+    loadmsg = await ctx.send(f":mag_right: Getting information for `{icao}`...")
+    if not icao:
+        return await loadmsg.edit(content=":x: Please provide an valid ICAO code.")
+    url = f"https://avwx.rest/api/metar/{icao}?airport=true&reporting=true&format=json"
+    headers = {'Authorization': 'aZusj_q7ImZHgSmm5DeMR1ctcwEBRsU0dbol3VScagI'}
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as r:
+            res = await r.json()
+    if "error" in res:
+        return await loadmsg.edit(content=":x: Invalid ICAO.")
+    embed = discord.Embed(title=f"METAR data", color=discord.Colour.blue(), timestamp=datetime.datetime.utcnow())
+    embed.add_field(name="**Flight rules**", value=res['flight_rules'])
+    embed.add_field(name="**METAR**", value=res['raw'])
+    embed.add_field(name="**Altimeter**", value=f"{res['altimeter']['value']}{res['units']['altimeter']}")
+    embed.add_field(name="**Visiblity**", value=f"{res['visibility']['value']}{res['units']['visibility']}")
+    embed.add_field(name="**Wind direction**", value=res['wind_direction']['value'])
+    embed.add_field(name="**Wind speed**", value=f"{res['wind_speed']['value']}{res['units']['wind_speed']}")
+    embed.set_author(name="SwissPlus", url="https://swissdev.team/swissplus", icon_url=ctx.message.author.avatar_url)
+    embed.set_footer(text=f"SwissPlus - METAR")
+    await loadmsg.edit(content=None, embed=embed)
+    
+blue = discord.Colour.blue()
+red = discord.Colour.red()
+    
+@client.command(aliases=["battle"])
+async def fight(ctx,member : discord.Member):
+	if ctx.author == member:
+		await ctx.send(f"Why would you want to fight yourself, {ctx.author.mention}? That's just silly.")
+	else:
+		embed1 = discord.Embed(description=f"{ctx.author.mention} **VS** {member.mention}\n")
+		intro = await ctx.send(embed=embed1)
+		member_hp = 100
+		author_hp = 100
+
+		first_hit = random.choice(["author","member"])
+		embed2 = discord.Embed(description=f"\n{ctx.author.mention} health - **{author_hp}**\n{member.mention} health - **{member_hp}**")
+		display = await ctx.send(embed=embed2)
+		c = 0
+		while True:
+			
+			if first_hit == "author":
+				author_dmg = random.randint(8,18)
+				member_dmg = random.randint(8,18)
+
+				member_hp = member_hp - author_dmg
+				await asyncio.sleep(1)
+				if member_hp <= 0:
+					embed_d = discord.Embed(description=f"<a:wobbley:708359648452804668> **{ctx.author} won the fight!**\n{ctx.author.mention} health - **{author_hp}**\n{member.mention} health - **0**")
+					await display.edit(embed=embed_d)
+					break
+				else:
+					author_hp = author_hp - member_dmg
+				if author_hp <= 0:
+					embed_d = discord.Embed(description=f"<a:wobbley:708359648452804668> **{member} won the fight!**\n{ctx.author.mention} health - 0\n{member.mention} health - {member_hp}")
+					await display.edit(embed=embed_d)
+					break
+
+			else:
+				member_dmg = random.randint(8,18)
+				author_dmg = random.randint(8,18)
+
+				author_hp = author_hp - member_dmg
+				await asyncio.sleep(1)
+				if author_hp <= 0:
+					embed_d = discord.Embed(description=f"<a:wobbley:708359648452804668> **{member} won the fight!**\n{ctx.author.mention} health - 0\n{member.mention} health - {member_hp}")
+					await display.edit(embed=embed_d)
+					break
+				else:
+					member_hp = member_hp - author_dmg
+				if member_hp <= 0:
+					embed_d = discord.Embed(description=f"<a:wobbley:708359648452804668> **{member} won the fight!**\n{ctx.author.mention} health - {author_hp}\n{member.mention} health - 0")
+					await display.edit(embed=embed_d)
+					break
+			c = c+1
+			if c%2 == 0:
+
+				embed_display = discord.Embed(colour=red,description=f":crossed_swords: **Fight In Progress!**\n{ctx.author.mention} health - {author_hp}\n{member.mention} health - {member_hp}")
+			else:
+				embed_display = discord.Embed(colour=blue,description=f":crossed_swords: **Fight In Progress!**\n{ctx.author.mention} health - {author_hp}\n{member.mention} health - {member_hp}")
+
+			await display.edit(embed=embed_display)
+
+@fight.error
+async def fight_error(ctx,error):
+    if isinstance(error,commands.MissingRequiredArgument):
+        embed = discord.Embed(title='Required Arguments Missing', description=f"Incorrect command usage! \n**Please use**: `+fight @member`",colour=red)
+        embed.set_footer(text="© Miguel_#2250")
+        await ctx.send(embed=embed)
+    else:
+        await ctx.send(error)
+    
+
+@client.command()
+async def cat(ctx):
+
+    async with aiohttp.ClientSession() as s:
+    
+      async with s.get("https://api.ksoft.si/images/random-image", params = {"tag": "cat"}, headers = {"Authorization": f"Bearer a43660a9f4c73f5f2d8aea7b3a8697d3b6652b41"}) as resp:
+    
+        data = await resp.json()
+    
+    embed = discord.Embed()
+    
+    embed.description = "Here's some cute cat owo"
+    
+    embed.set_image(url = data["url"])
+    
+    await ctx.send(embed = embed)
+    
+@cat.error
+async def error_handler(ctx, error):
+    if isinstance(error, BotMissingPermissions):
+        embed=discord.Embed(description=f":x: I need the permission `{' '.join(error.missing_perms)}` to do that!", color = 0xff0000)
+        await ctx.send(embed=embed)
+        raise CustomException() from error
+    else:
+        await ctx.send(error)
+        
+@client.command()
+async def dog(ctx):
+
+    async with aiohttp.ClientSession() as s:
+    
+      async with s.get("https://api.ksoft.si/images/random-image", params = {"tag": "dog"}, headers = {"Authorization": f"Bearer a43660a9f4c73f5f2d8aea7b3a8697d3b6652b41"}) as resp:
+    
+        data = await resp.json()
+    
+    embed = discord.Embed()
+    
+    embed.set_image(url = data["url"])
+    
+    embed.description = "Here's some cute dog owo"
+    
+    await ctx.send(embed = embed)
     
     
 @client.command(name = "math", aliases = ["solve", "calc"])
@@ -194,7 +436,7 @@ async def bork(ctx, user: discord.Member = None):
         await ctx.send(f"`{ctx.author}` börked `{user}`! börk börk börk. börk börk :(", file=discord.File("bork.png"))
 
 @client.command(aliases=["w"])
-async def weather(ctx, varos):
+async def weather(ctx, *, varos):
     if not ctx.message.author.bot:
         try:
             api_key = "ae64e34a4d20f98830c9a409d2a1a814"
@@ -209,37 +451,38 @@ async def weather(ctx, varos):
                 import pytemperature
                 y = x["main"]
                 z = x["weather"]
+                t = x["sys"]
+                w = x["wind"]
                 current_temperature = y["temp"]
                 current_pressure = y["pressure"]
                 current_humidity = y["humidity"]
+                country = t["country"]
+                wind = w["speed"]
+                direc = w["deg"]
                 weather_description = z[0]["description"]
                 celsius = pytemperature.k2c(current_temperature)
-                embed = discord.Embed(title="Weather informations", color=0x00ff00, timestamp=datetime.datetime.utcnow())
+                embed = discord.Embed(title=f"Weather information for {varos}, {country}", color=0x00ff00, timestamp=datetime.datetime.utcnow())
                 embed.add_field(name="**Temperature**", value=f"{int(celsius)}°C")
                 embed.add_field(name="**Pressure**", value=f"{current_pressure}hPa")
                 embed.add_field(name="**Humidity**", value=f"{current_humidity}%")
+                embed.add_field(name="**Wind**", value=f"{wind}mph at {direc}°")
                 embed.set_author(name="SwissPlus", icon_url=ctx.message.author.avatar_url)
                 await ctx.send(embed=embed)
             else:
                 await ctx.send(":x: Cannot find this **city**!")
         except Exception as e:
             await ctx.send(str(e))
-            #await ctx.send(f":x: Couldn't retrieve data for {varos}!")
+            await ctx.send(f":x: Couldn't retrieve data for {varos}!")
             
 @client.event
 async def on_member_join(member):
-    file = open("system.json", "r")
-    load = json.load(file)
-
-    if "welcomer" in load:
-
-        return
-    channel = client.get_channel(723540800171933717)
-    embed = discord.Embed(title="***Welcome!***", description="Welcome {} to {}! you are the {} member!  Please read The <#593154693459476480>. Enjoy your stay!".format(member.mention, guild.name, str(member.guild.member_count)), colour=discord.Colour.green())
+    channel = client.get_channel(592463507124125706)
+    embed = discord.Embed(title="***Welcome!***", description="Welcome {} to the Swiss001 Server! You are the {} member!  Please read the <#593154693459476480>. Enjoy your stay!".format(member.mention, str(member.guild.member_count)), colour=discord.Colour.green())
     embed.set_footer(text=member.name, icon_url=member.avatar_url)
     await channel.send(embed=embed)
+    await member.send("Welcome to the Swiss001 Server. As our main bot is currently offline, please DM an Admin to get you verified in the server to access channels. Thank you. If you have any futher questions respond to this message and the Bot Developer will respond to you as soon as possible. Thank you for your paitence.")
 
-kson_token = "a43660a9f4c73f5f2d8aea7b3a8697d3b6652b41"
+
 
 @client.command()
 async def locate(ctx, *, place = None):
@@ -258,9 +501,9 @@ async def locate(ctx, *, place = None):
 
     async with aiohttp.ClientSession() as session:
 
-      async with session.get("https://api.ksoft.si/kumo/gis", params = {"q": place, "include_map": "true"}, headers = {"Authorization": f"Bearer {kson_token}"}) as resp:
+      async with session.get("https://api.ksoft.si/kumo/gis", params = {"q": place, "include_map": "true"}, headers = {"Authorization": f"Bearer a43660a9f4c73f5f2d8aea7b3a8697d3b6652b41"}) as resp:
 
-        ndata = await resp.json()
+        data = await resp.json()
 
     embed = discord.Embed()
 
@@ -276,17 +519,21 @@ async def locate(ctx, *, place = None):
 
     await ctx.send(embed = embed)
     
+@locate.error
+async def error_handler(ctx, error):
+    if isinstance(error, BotMissingPermissions):
+        embed=discord.Embed(description=f":x: I need the permission `{' '.join(error.missing_perms)}` to do that!", color = 0xff0000)
+        await ctx.send(embed=embed)
+        raise CustomException() from error
+    else:
+        await ctx.send(error)
+    
 
             
 @client.command()
 async def butter(ctx):
     await ctx.send("you think this is a command? maybe later :)")
-    
-@client.command()
-async def emoji(ctx, emoji: str):
-    emoji=discord.utils.get(ctx.guild.emojis, name=emoji)
-    await ctx.send(F"\{emoji}")
-    
+
 
 
 @client.command()
@@ -586,22 +833,22 @@ async def GuildCount(ctx):
   servers = list(client.guilds)
   await ctx.send("**SwissFun** is connected on " + str(len(client.guilds)) + " server(s):")
   await ctx.send('\n'.join(server.name for server in servers))
-
-'''@client.command()
+  
+'''
+@client.command()
 @commands.has_permissions(administrator=True)
 async def say(ctx, channel : discord.TextChannel, *, arg = None):
   
   if arg == None:
     
     return await ctx.send("Say something to say 😑\nUsage: **`+say #channel <message>`**")
-  await ctx.message.delete()
   
   await channel.send(arg)
   logs = client.get_channel(716042337330921642)
   embed = discord.Embed(title="Say Command Used", description=f"Message: `{arg}`\nSent in: <#{channel.id}>\nSent by: {ctx.author}",colour=discord.Colour.blue())
   await logs.send(embed=embed)
   await ctx.send(f"{ctx.author.mention}, Message sent to <#{channel.id}> with the message: `{arg}`.")
- 
+
 @client.command()
 @commands.has_permissions(manage_messages=True)
 @commands.bot_has_permissions(manage_messages = True)
@@ -614,7 +861,7 @@ async def purge(ctx,amount:int=None):
             await ctx.channel.purge(limit = amount + 1)
             embed = discord.Embed(color=discord.Colour.green(), description=f":white_check_mark: Purged {amount} message(s).")
             await ctx.send(embed=embed, delete_after=3)
-        
+            
 @purge.error
 async def error_handler(ctx, error):
     if isinstance(error, BotMissingPermissions):
@@ -631,7 +878,7 @@ async def error_handler(ctx, error):
 
 
 @client.command()
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_channels=True)
 async def config(ctx, pin = None, type = None):
     file = open("system.json", "r")
     load = json.load(file)
@@ -639,7 +886,7 @@ async def config(ctx, pin = None, type = None):
             
     if type is None:
         embed = discord.Embed()
-        embed.set_footer(text = "You can enable/disable commands by using +config enable/disable category-name")
+        embed.set_footer(text = "You can enable/disable commands by using +config enable/disable-category-name")
         
         if not "fun" in load:
             embed.add_field(name="Fun", value="Current: **Enabled**", inline=False)
@@ -653,12 +900,8 @@ async def config(ctx, pin = None, type = None):
             embed.add_field(name="Reddit", value="Current: **Enabled**", inline=False)
         elif "reddit" in load:
             embed.add_field(name="Reddit", value="Current: **Disabled**", inline=False)
-        if not "welcomer" in load:
-            embed.add_field(name="Welcomer", value="Current: **Enabled**", inline=False)
-        elif "welcomer" in load:
-            embed.add_field(name="Welcomer", value="Current: **Disabled**", inline=False)
+         #except: pas
         return await ctx.send(embed=embed)
-         #except: pass
                     
         
     if type == "enable-mod":
@@ -737,37 +980,12 @@ async def config(ctx, pin = None, type = None):
     
       await ctx.send(f"<a:success:719504281044123680> Disabled `reddit` commands.")
       
-    elif type == "enable-welcomer":
-    
-      if not "welcomer" in load:
-    
-        return await ctx.send("The `Welcomer` system isn't disabled. The system are currently active.")
-    
-      load.pop("welcomer")
-    
-      dumps = open("system.json", "w")
-      json.dump(load, dumps, indent = 4)
-    
-      await ctx.send(f"<a:success:719504281044123680> Enabled `welcomer` system.")
-          
-    elif type == "disable-welcomer":
-    
-      if not "welcomer" in load:
-    
-        load["welcomer"] = {}
-    
-      dumps = open("system.json", "w")
-    
-      json.dump(load, dumps, indent = 4)
-    
-      await ctx.send(f"<a:success:719504281044123680> Disabled `welcomer` system.")
-      
     
     
 @config.error
 async def config_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
-        embed = discord.Embed(description = ":no_entry_sign: You need the `Administrator` permission to preform this command.", color = 0xff0000)
+        embed = discord.Embed(description = ":no_entry_sign: You need the `Manage Channels` permission to preform this command.", color = 0xff0000)
         await ctx.send(embed=embed)
         
 
@@ -847,8 +1065,8 @@ async def suggest(ctx, *, reportmsg):
     request=await channel.send(embed=embed)
     await request.add_reaction("✅"); await request.add_reaction("❌")
     embed = discord.Embed(title=f"{ctx.author} Your suggestion has been submitted.", color=0xFFFF)
-    await ctx.message.delete()
     await ctx.send(embed=embed)
+
 
 @client.command()
 async def build(ctx):
@@ -1071,8 +1289,168 @@ async def eightball(ctx):
         'Execute bean.exe',
         'ok nerd',
         'You must be borking mad!'
+        'Its possible',
+        'Maybe',
+        'Nah',
+        'thicc',
+        'bruh'
     ]
     await ctx.send(random.choice(possible_responses) + ", " + ctx.message.author.mention)
+
+'''@client.command()
+@bot_has_permissions(manage_messages=True)
+@commands.has_permissions(manage_messages=True)
+async def slowmode(ctx, name = None):
+   if name == None:
+     error = discord.Embed(color = discord.Colour.red(), title=":x: Invalid argument", description="**+slowmode <time>/0/off**")
+     await ctx.send(embed=error)
+   elif name == "0":
+       await ctx.channel.edit(slowmode_delay=name)
+       embed = discord.Embed(description="<a:success:719504281044123680> Turned off slowmode.", color = discord.Colour.green())
+       await ctx.send(embed=embed)
+   elif name == "off":
+       await ctx.channel.edit(slowmode_delay=name)
+       embed = discord.Embed(description="<a:success:719504281044123680> Turned off slowmode.", color = discord.Colour.green())
+       await ctx.send(embed=embed)
+   else:
+     await ctx.channel.edit(slowmode_delay=name)
+     embed = discord.Embed(description=f"<a:success:719504281044123680> Slowmode was modified to {name} second(s).", color = discord.Colour.green())
+     await ctx.send(embed=embed)
+     
+@slowmode.error
+async def error_handler(ctx, error):
+    if isinstance(error, BotMissingPermissions):
+        embed=discord.Embed(description=f":x: I need the permission `{' '.join(error.missing_perms)}` to do that!", color = 0xff0000)
+        await ctx.send(embed=embed)
+    if isinstance(error, commands.MissingPermissions):
+        embed = discord.Embed(description = ":x: You need the `Manage Mesages` permission to do that.", color = 0xff0000)
+        await ctx.send(embed=embed)
+        raise CustomException() from error
+    else:
+        raise error
+'''
+@client.command()
+async def rule(ctx, rule = None):
+    if rule == None:
+        await ctx.send("brO yOu gotta eNTeR A rUlE")
+    elif rule == "1":
+        embed = discord.Embed(title="Rule 1", description="You must be over the age of 13. If we suspect a user being under the age of 13, we may enforce appropriate action to make sure all users are above the age of 13.")
+        return await ctx.send(embed=embed)
+    elif rule == "2":
+        embed = discord.Embed(title="Rule 2", description="Inappropriate discord usernames or profile pictures are not allowed, you will be given a formal warning to change this and may lead to further action being taken upon you.")
+        return await ctx.send(embed=embed)
+    elif rule == "3":
+        embed = discord.Embed(title="Rule 3", description="Moderators reserve the right to change your server nickname if it is found to be violating the rules. This will be followed by a formal warning as stated above.")
+        return await ctx.send(embed=embed)
+    elif rule == "4":
+        embed = discord.Embed(title="Rule 4", description="Please withhold only a single account within the server. Prior permission will be required from the staff team if you wish to bring in another account for any legit reason.")
+        return await ctx.send(embed=embed)
+    elif rule == "5":
+        embed = discord.Embed(title="Rule 5", description="With custom statuses, you may not have any inappropriate/racist/offensive content in anyway. Self advertising is also prohibited and action may be taken if these rules are broken.")
+        return await ctx.send(embed=embed)
+    elif rule == "6":
+        embed = discord.Embed(title="Rule 6", description="Alternate accounts are not tolerated within the server.")
+        return await ctx.send(embed=embed)
+    elif rule == "7":
+        embed = discord.Embed(title="Rule 7", description="Discriminatory jokes, language and hate speech will not be tolerated at any point.")
+        return await ctx.send(embed=embed)
+    elif rule == "8":
+        embed = discord.Embed(title="Rule 8", description="We will not tolerate any insults, verbal abuse and any threats towards others/the server.")
+        return await ctx.send(embed=embed)
+    elif rule == "9":
+        embed = discord.Embed(title="Rule 9", description="DDOS Threats are Zero Tolerance and you will be banned immediately. No questions asked.")
+        return await ctx.send(embed=embed)
+    elif rule == "10":
+        embed = discord.Embed(title="Rule 10", description="Excessive Swearing is not allowed and you will be warned. Please do not try and use loopholes.")
+        return await ctx.send(embed=embed)
+    elif rule == "11":
+        embed = discord.Embed(title="Rule 11", description="The excessive use of capital letters is not allowed and will result in a warning.")
+        return await ctx.send(embed=embed)
+    elif rule == "12":
+        embed = discord.Embed(title="Rule 12", description="No advertising is allowed (except from in <#665346469074567178> which only allows you to self-promote your social media. No discord invites allowed.)")
+        return await ctx.send(embed=embed)
+    elif rule == "13":
+        embed = discord.Embed(title="Rule 13", description="Please do not flood the text channels with rapid messages. E.g sending 3-5 messages in a consecutive manner.")
+        return await ctx.send(embed=embed)
+    elif rule == "14":
+        embed = discord.Embed(title="Rule 14", description="Trolling or being a general nuisance is discouraged.")
+        return await ctx.send(embed=embed)
+    elif rule == "15":
+        embed = discord.Embed(title="Rule 15", description="Please try and avoid posting large obnoxious paragraphs of text.")
+        return await ctx.send(embed=embed)
+    elif rule == "16":
+        embed = discord.Embed(title="Rule 16", description="Please respect everyone within the server. Everyone has a different opinion and should be able to express them.")
+        return await ctx.send(embed=embed)
+    elif rule == "16a":
+        embed = discord.Embed(title="Rule 16a", description="Any politics of any kind are not tolerated; remember, this is an aviation server. Political nicknames, profile pictures, and statuses are allowed as long as they do not provoke arguments or insult other users.")
+        return await ctx.send(embed=embed)
+    elif rule == "17":
+        embed = discord.Embed(title="Rule 17", description="We have a zero tolerance policy for terrorism. Please avoid promoting terrorism or making any remarks.")
+        return await ctx.send(embed=embed)
+    elif rule == "18":
+        embed = discord.Embed(title="Rule 18", description="Please post any unrelated content in the correct channels.")
+        return await ctx.send(embed=embed)
+    elif rule == "19":
+        embed = discord.Embed(title="Rule 19", description="Please do not ask to become staff. You can apply for these roles when applications are open or become selected.")
+        return await ctx.send(embed=embed)
+    elif rule == "20":
+        embed = discord.Embed(title="Rule 20", description="Do not impersonate any member of staff.")
+        return await ctx.send(embed=embed)
+    elif rule == "20a":
+        embed = discord.Embed(title="Rule 20a", description="Please avoid backseat moderation.")
+        return await ctx.send(embed=embed)
+    elif rule == "20b":
+        embed = discord.Embed(title="Rule 20b", description="Role colors, specifically of custom roles may NOT be the same color as any staff role or staff member's role.")
+        return await ctx.send(embed=embed)
+    elif rule == "21":
+        embed = discord.Embed(title="Rule 21", description="Refrain from posting blank messages.")
+        return await ctx.send(embed=embed)
+    elif rule == "22":
+        embed = discord.Embed(title="Rule 22", description="Do not leak chats to banned users of the Swiss server.")
+        return await ctx.send(embed=embed)   
+    elif rule == "23":
+        embed = discord.Embed(title="Rule 23", description="Absolutely no NSFW content.")
+        return await ctx.send(embed=embed)   
+    elif rule == "24":
+        embed = discord.Embed(title="Rule 24", description="Posting any offensive, sexually explicit or derogatory content is not allowed.")
+        return await ctx.send(embed=embed)
+    elif rule == "25":
+        embed = discord.Embed(title="Rule 25", description="Please do not promote any illegal content including, but not limited to: Piracy and drugs. ")
+        return await ctx.send(embed=embed)  
+    elif rule == "26":
+        embed = discord.Embed(title="Rule 26", description="Do not post any content which reveals the personal information of a specific user. ")
+        return await ctx.send(embed=embed)
+    elif rule == "27":
+        embed = discord.Embed(title="Rule 27", description="We reserve the right to remove any user content at any time, this can be for any reason.")
+        return await ctx.send(embed=embed)
+    elif rule == "28":
+        embed = discord.Embed(title="Rule 27", description="Do not plagarise any content from the internet and claim that it is yours. This includes planespotting images, please give credit.")
+        return await ctx.send(embed=embed)
+    elif rule == "29":
+        embed = discord.Embed(title="Rule 29", description="Please use the VC for its intended purpose. E.g. use the general VC for general discussion and not music chat.")
+        return await ctx.send(embed=embed)
+    elif rule == "30":
+        embed = discord.Embed(title="Rule 30", description="Please do not play any racist, homophobic or songs which contain excessive swearing. Action will be taken.")
+        return await ctx.send(embed=embed)
+    elif rule == "31":
+        embed = discord.Embed(title="Rule 31", description="Please avoid earraping the VC, however if all agree then you can go ahead. ")
+        return await ctx.send(embed=embed)
+    elif rule == "32":
+        embed = discord.Embed(title="Rule 32", description="Please avoid playing any high pitched, loud or annoying sounds.")
+        return await ctx.send(embed=embed)
+    elif rule == "33":
+        embed = discord.Embed(title="Rule 33", description="Try and reduce any background noise.")
+        return await ctx.send(embed=embed)
+    elif rule == "34":
+        embed = discord.Embed(title="Rule 34", description="Moderators reserve the right to disconnect anyone from any VC at any time.")
+        return await ctx.send(embed=embed)
+    elif rule == "35":
+        embed = discord.Embed(title="Rule 35", description="Moderators also have the right to enter any VC at any time.")
+        return await ctx.send(embed=embed)
+    elif rule == "36":
+        embed = discord.Embed(title="Rule 36", description="We reserve the right to remove the DJ role from anyone at anytime.")
+        return await ctx.send(embed=embed)
+        
 
 
 
@@ -1081,6 +1459,9 @@ async def eightball(ctx):
 @commands.is_owner()
 async def restart(ctx):
     await ctx.send("i hate when u restart me it hurts smh ok bye")
+    channel = client.get_channel(723120227533062205)
+    embed = discord.Embed(title="Offline", colour=discord.Colour.red())
+    await channel.send(embed=embed)
     await sys.exit()
     
 @client.command()
@@ -1088,7 +1469,7 @@ async def terminate(ctx):
     print('hi')
 
 
-#kick
+'''#kick
 @client.command()
 @bot_has_permissions(kick_members=True)
 @commands.has_permissions(kick_members=True)
@@ -1124,7 +1505,7 @@ async def error_handler(ctx, error):
     else:
         raise error
   
-'''#ban
+#ban
 @client.command()
 @bot_has_permissions(ban_members=True)
 @commands.has_permissions(ban_members=True)
@@ -1155,7 +1536,7 @@ async def error_handler(ctx, error):
         await ctx.send(embed=embed)
     if isinstance(error, discord.Forbidden):
         embed = discord.Embed(description = ":x: That user is a mod/admin, I can't do that.", color = 0xff0000)
-        await ctx.send(embed=embed)
+        return await ctx.send(embed=embed)
         raise CustomException() from error
     if isinstance(error, commands.MissingRequiredArgument):
         embed = discord.Embed(description = ":x: I don't know who to ban!\nMention a member to ban them.", color = 0xff0000)
@@ -1179,6 +1560,7 @@ async def gayrate(ctx, member: discord.Member = None):
         Percent = str(random.randint(0,100))
         await ctx.send(f"{member.mention} is {Percent}% gay!")
 '''
+
 @client.command()
 async def simprate(ctx, member: discord.Member = None):
     file = open("system.json", "r")
@@ -1209,7 +1591,7 @@ async def age(ctx, member: discord.Member = None):
         Percent = str(random.randint(13,100))
         await ctx.send(f"{member.mention} is {Percent} years old!")
         
-'''@client.command()
+'''client.command()
 @commands.has_permissions(manage_messages = True)
 async def clearwarns(ctx, user: discord.Member = None):
     file = open("system.json", "r")
@@ -1309,7 +1691,7 @@ async def warns(ctx, user: discord.Member = None):
 
       msg += "```"
       
-      embed = discord.Embed(description = f"Warnings for {fetched_user}", color = 0x00ff00)
+      embed = discord.Embed(description = f"Warnings for {fetched_user} ({user.id})", color = 0x00ff00)
       embed.add_field(name=f"Warnings:", value=f"\n\n".join([warns for warns in warn[str(ctx.guild.id)][str(fetched_user.id)]["warns"]]))
 
       await ctx.send(embed=embed)
@@ -1404,7 +1786,7 @@ async def warn_error(ctx, error):
         embed = discord.Embed(description = ":warning: Error", color = discord.Colour.red())
         embed.add_field(name="An error has occured!", value=f"{error}")
         await ctx.send(embed=embed)
-'''  
+'''
 @commands.cooldown(1, 5, commands.BucketType.user)
 @client.command()
 async def translate(ctx, type = None, *, arg = None):
@@ -1505,7 +1887,7 @@ async def swiss_error(ctx, error):
         embed=discord.Embed(title="Slow it down cowboy!",description=f"C'mon, {error}", color = 0xff0000)
         await ctx.send(embed=embed)
         
-@client.command()
+'''@client.command()
 @commands.has_permissions(view_audit_log=True)
 @commands.bot_has_permissions(view_audit_log = True)
 async def recentlog(ctx):
@@ -1558,7 +1940,7 @@ async def recentlog_handler(ctx, error):
         raise CustomException() from error
     else:
         raise error
-        
+'''   
 # Money System
 
 @client.command()
@@ -1795,5 +2177,23 @@ async def gamble_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
         embed=discord.Embed(title="Slow it down cowboy!",description=f"C'mon, {error}", color = 0xff0000)
         await ctx.send(embed=embed)
+        
+@client.command()
+async def croissant(ctx):
+    embed = discord.Embed(title="Croissant pls")
+        #Percent = str(random.randint(0,100))
+        #await ctx.send(f"{member.mention} is {Percent}% simp!")
+    possible_responses = [
+        'https://media.discordapp.net/attachments/715001309278765057/725851468976095273/20101021-croissants-primary.jpg',
+        'https://media.discordapp.net/attachments/715001309278765057/725851469206519838/mini-croissant-cereal-bites.jpg?width=475&height=475',
+        'https://media.discordapp.net/attachments/715001309278765057/725851469487538318/le-croissant_1522178196499_10827988_ver1-0-1024x576.jpg?width=844&height=475',
+        'https://media.discordapp.net/attachments/715001309278765057/725851470448164952/32810_sfs-croissants-14.jpg?width=475&height=475',
+        'https://media.discordapp.net/attachments/715001309278765057/725851470976647188/IMG_2801-easy-croissants-recipe-720x1080-1.jpg?width=316&height=475',
+        'https://media.discordapp.net/attachments/715001309278765057/725851471127773264/cornetti-italian-croissants-24713-1.jpg?width=710&height=475',
+        'https://media.discordapp.net/attachments/715001309278765057/725852008472641627/DSC_2114.jpg?width=696&height=475',
+        'https://media.discordapp.net/attachments/715001309278765057/725852008786952192/world-s-biggest-croissant.jpg'
+        ]
+    embed.set_image(url=random.choice(possible_responses))
+    await ctx.send(embed=embed)
 
 client.run(os.environ['BOT_TOKEN'])
