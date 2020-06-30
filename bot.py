@@ -105,7 +105,7 @@ async def help(ctx):
     embed.add_field(name="<a:betterinfo:723691069035905146> Information", value="`botinfo`,`build`,`ping`,`userinfo`,`level-roles`", inline=False)
     embed.add_field(name="<a:gears:723662459499708437> Moderation", value="`config`", inline=False)
     embed.add_field(name="<a:securitybig:723683774776344637> Security", value="`pincode`", inline=False)
-    embed.add_field(name="<a:fun:723681896722333726> Fun", value="`fact`,`8ball`,`topic`,`suggest`,`translate`,`slap`,`swiss`,`age`,`weather`,`hack`,`ship`,`timer`,`locate`,`bork`,`croissant`,`cat`,`dog`,`metar`,`emojify`,`fight`,`putin`", inline=False)
+    embed.add_field(name="<a:fun:723681896722333726> Fun", value="`fact`,`8ball`,`topic`,`feedback`,`translate`,`slap`,`swiss`,`age`,`weather`,`hack`,`ship`,`timer`,`locate`,`bork`,`croissant`,`cat`,`dog`,`metar`,`emojify`,`fight`,`putin`", inline=False)
     embed.add_field(name=":moneybag: Currency", value="`register`,`work`,`balance`", inline=False)
     embed.add_field(name=":notes: Music", value="`join`,`leave`,`play`,`stop`,`leave`,`queue`,`skip`,`remove`,`volume`,`shuffle`,`loop`", inline=False)
     embed.add_field(name=":page_facing_up: Text", value="`drunkify`,`encrypt`,`decrypt`,`msg-leaderboard`", inline=False)
@@ -1052,12 +1052,12 @@ async def userinfo(ctx, member: discord.Member = None):
         await ctx.send(embed=embed)
 
 @client.command()
-async def suggest(ctx, *, reportmsg):
+async def feedback(ctx, *, reportmsg):
     channel = client.get_channel(724426437557223425)
     embed = discord.Embed(title=f"{ctx.author}", description=f"{reportmsg}", color=0xFFFF)
     request=await channel.send(embed=embed)
     await request.add_reaction("✅"); await request.add_reaction("❌")
-    embed = discord.Embed(title=f"{ctx.author} Your suggestion has been submitted.", color=0xFFFF)
+    embed = discord.Embed(title=f"{ctx.author} Your feedback has been submitted.", color=0xFFFF)
     await ctx.send(embed=embed)
 
 
