@@ -108,9 +108,17 @@ async def help(ctx):
     embed.add_field(name="<a:fun:723681896722333726> Fun", value="`fact`,`8ball`,`topic`,`feedback`,`translate`,`slap`,`swiss`,`age`,`weather`,`hack`,`ship`,`timer`,`locate`,`bork`,`croissant`,`cat`,`dog`,`metar`,`emojify`,`fight`,`putin`", inline=False)
     embed.add_field(name=":moneybag: Currency", value="`register`,`work`,`balance`", inline=False)
     embed.add_field(name=":notes: Music", value="`join`,`leave`,`play`,`stop`,`leave`,`queue`,`skip`,`remove`,`volume`,`shuffle`,`loop`", inline=False)
-    embed.add_field(name=":page_facing_up: Text", value="`drunkify`,`encrypt`,`decrypt`,`msg-leaderboard`", inline=False)
+    embed.add_field(name=":page_facing_up: Text", value="`drunkify`,`encrypt`,`decrypt`,`msg-leaderboard`,`message`", inline=False)
     embed.add_field(name="<a:RedditSpin:723666835710541898> Reddit", value="`flightsim`,`fsx`,`meme`,`news`,`swissbot`", inline=False)
     await ctx.send(embed=embed)
+	
+@client.command()
+async def message(ctx, message = None):
+    if message is None:
+        await ctx.send(":x: Invalid Argument. `+message {message_id}`")
+    else:
+        embed = discord.Embed(title="Message Locator", description=f"[Jump to Message](https://discordapp.com/channels/592458779006730264/{ctx.channel.id}/{message})",colour=discord.Colour.blue())
+        await ctx.send(embed=embed)
     
 @client.command()
 async def putin(ctx):
