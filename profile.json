@@ -1,0 +1,67 @@
+{
+    "713533988266049646": {
+        "character-name": "alex",
+        "character-age": "47247894324",
+        "character-hobby": "idk",
+        "character-image": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Stadtbild_M%C3%BCnchen.jpg/800px-Stadtbild_M%C3%BCnchen.jpg",
+        "character-place": "Novi"
+    },
+    "466645677879984130": {
+        "character-name": "MiguelsMom",
+        "character-age": "69",
+        "character-hobby": "Cooking",
+        "character-image": "NoU",
+        "character-place": "House"
+    },
+    "368060351952191488": {
+        "character-name": "Fruit",
+        "character-age": "16",
+        "character-hobby": "N/A",
+        "character-image": "N/A",
+        "character-place": "N/A"
+    },
+    "592458779006730264": {
+        "592828869866684417": {
+            "message-counter": 2
+        },
+        "713533988266049646": {
+            "message-counter": 3
+        },
+        "614550694338232332": {
+            "message-counter": 1
+        },
+        "596751548877373440": {
+            "message-counter": 2
+        },
+        "399790224189947904": {
+            "message-counter": 2
+        },
+        "404116627584450570": {
+            "message-counter": 2
+        },
+        "382952418507489281": {
+            "message-counter": 2
+        }
+    },
+    "596751548877373440": {
+        "character-name": "Miguel_",
+        "character-age": "15",
+        "character-hobby": "Coding",
+        "character-image": "N/A",
+        "character-place": "snake"
+    },
+    "381678394187841546": {
+        "character-name": "Jaiden",
+        "character-age": "14",
+        "character-hobby": "Art",
+        "character-image": "",
+        "character-place": "Pen"
+    },
+    "599759136493797377": {
+        "character-name": "aaron",
+        "character-age": "13",
+        "character-hobby": "awopwane",
+        "character-image": "no",
+        "character-place": "me"
+    }
+}
